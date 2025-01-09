@@ -43,15 +43,10 @@ func init() {
 	hostinfo.SetApp("caddy")
 }
 
-func getTCPListener(c context.Context, _ string, addr string, _ net.ListenConfig) (any, error) {
+func getTCPListener(c context.Context, _ string, host string, port string, _ uint, _ net.ListenConfig) (any, error) {
 	ctx, ok := c.(caddy.Context)
 	if !ok {
 		return nil, fmt.Errorf("context is not a caddy.Context: %T", c)
-	}
-
-	network, host, port, err := caddy.SplitNetworkAddress(addr)
-	if err != nil {
-		return nil, err
 	}
 
 	s, err := getNode(ctx, host)
@@ -59,21 +54,14 @@ func getTCPListener(c context.Context, _ string, addr string, _ net.ListenConfig
 		return nil, err
 	}
 
-	if network == "" {
-		network = "tcp"
-	}
+	network := "tcp"
 	return s.Listen(network, ":"+port)
 }
 
-func getTLSListener(c context.Context, _ string, addr string, _ net.ListenConfig) (any, error) {
+func getTLSListener(c context.Context, _ string, host string, port string, _ uint, _ net.ListenConfig) (any, error) {
 	ctx, ok := c.(caddy.Context)
 	if !ok {
 		return nil, fmt.Errorf("context is not a caddy.Context: %T", c)
-	}
-
-	network, host, port, err := caddy.SplitNetworkAddress(addr)
-	if err != nil {
-		return nil, err
 	}
 
 	s, err := getNode(ctx, host)
@@ -81,9 +69,7 @@ func getTLSListener(c context.Context, _ string, addr string, _ net.ListenConfig
 		return nil, err
 	}
 
-	if network == "" {
-		network = "tcp"
-	}
+	network := "tcp"
 	ln, err := s.Listen(network, ":"+port)
 	if err != nil {
 		return nil, err
@@ -98,15 +84,10 @@ func getTLSListener(c context.Context, _ string, addr string, _ net.ListenConfig
 	return ln, nil
 }
 
-func getUDPListener(c context.Context, _ string, addr string, _ net.ListenConfig) (any, error) {
+func getUDPListener(c context.Context, _ string, host string, port string, _ uint, _ net.ListenConfig) (any, error) {
 	ctx, ok := c.(caddy.Context)
 	if !ok {
 		return nil, fmt.Errorf("context is not a caddy.Context: %T", c)
-	}
-
-	network, host, port, err := caddy.SplitNetworkAddress(addr)
-	if err != nil {
-		return nil, err
 	}
 
 	s, err := getNode(ctx, host)
@@ -119,10 +100,7 @@ func getUDPListener(c context.Context, _ string, addr string, _ net.ListenConfig
 		return nil, err
 	}
 
-	if network == "" {
-		network = "udp4"
-
-	}
+	network := "udp4"
 	var ap netip.AddrPort
 	for _, ip := range st.TailscaleIPs {
 		// TODO(will): watch for Tailscale IP changes and update listener
